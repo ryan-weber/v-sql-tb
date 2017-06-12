@@ -5,7 +5,7 @@
 --=============================================================================
 -- Create the v_monitor_history schema
 --=============================================================================
-CREATE SCHEMA vstb;
+CREATE SCHEMA admin;
 
 --=============================================================================
 -- Create the v_monitor table structures
@@ -25,9 +25,9 @@ CREATE SCHEMA vstb;
 -- Create the data collector table structures
 --   dc_execution_engine_events
 --=============================================================================
-DROP TABLE IF EXISTS vstb.execution_engine_profiles CASCADE;
+DROP TABLE IF EXISTS admin.execution_engine_profiles CASCADE;
 
-CREATE TABLE vstb.execution_engine_profiles (
+CREATE TABLE admin.execution_engine_profiles (
          node_name VARCHAR(128) ENCODING RLE
         ,user_id INT ENCODING RLE
         ,user_name VARCHAR(128) ENCODING RLE
@@ -67,9 +67,9 @@ CREATE TABLE vstb.execution_engine_profiles (
         ,is_executing 
 SEGMENTED BY HASH (transaction_id) ALL NODES;
 
-DROP TABLE IF EXISTS vstb.query_profiles CASCADE;
+DROP TABLE IF EXISTS admin.query_profiles CASCADE;
  
-CREATE TABLE vstb.query_profiles (
+CREATE TABLE admin.query_profiles (
      session_id VARCHAR(128) ENCODING AUTO
     ,transaction_id INT ENCODING COMMONDELTA_COMP
     ,statement_id INT ENCODING COMMONDELTA_COMP
@@ -111,9 +111,9 @@ ORDER BY transaction_id
     ,is_executing 
 SEGMENTED BY HASH (transaction_id) ALL NODES;
 
-DROP TABLE IF EXISTS vstb.query_plan_profiles CASCADE;
+DROP TABLE IF EXISTS admin.query_plan_profiles CASCADE;
 
-CREATE TABLE vstb.query_plan_profiles (
+CREATE TABLE admin.query_plan_profiles (
      transaction_id INT ENCODING DELTARANGE_COMP
     ,statement_id INT ENCODING RLE
     ,path_id INT ENCODING COMMONDELTA_COMP
@@ -144,9 +144,9 @@ ORDER BY transaction_id
 SEGMENTED BY HASH (transaction_id) ALL NODES;
  
 
-DROP TABLE IF EXISTS vstb.query_requests CASCADE;
+DROP TABLE IF EXISTS admin.query_requests CASCADE;
 
-CREATE TABLE vstb.query_requests (
+CREATE TABLE admin.query_requests (
      node_name VARCHAR(128) ENCODING RLE
     ,user_name VARCHAR(128) ENCODING RLE
     ,session_id VARCHAR(128) ENCODING AUTO
@@ -184,9 +184,9 @@ ORDER BY transaction_id
     ,is_executing 
 SEGMENTED BY HASH (transaction_id) ALL NODES;
 
-DROP TABLE IF EXISTS vstb.query_events CASCADE;
+DROP TABLE IF EXISTS admin.query_events CASCADE;
 
-CREATE TABLE vstb.query_events (
+CREATE TABLE admin.query_events (
      event_timestamp timestamptz ENCODING DELTARANGE_COMP
     ,node_name VARCHAR(128) ENCODING RLE
     ,user_id INT ENCODING RLE
@@ -222,9 +222,9 @@ ORDER BY transaction_id
     ,suggested_action
 SEGMENTED BY HASH (transaction_id) ALL NODES;
 
-DROP TABLE IF EXISTS vstb.resource_rejection_details CASCADE;
+DROP TABLE IF EXISTS admin.resource_rejection_details CASCADE;
 
-CREATE TABLE vstb.resource_rejection_details (
+CREATE TABLE admin.resource_rejection_details (
     rejected_timestamp timestamptz ENCODING AUTO
     ,node_name VARCHAR(128) ENCODING RLE
     ,user_name VARCHAR(128) ENCODING RLE
@@ -252,9 +252,9 @@ ORDER BY transaction_id
     ,rejected_value 
 SEGMENTED BY HASH (transaction_id) ALL NODES;
 
-DROP TABLE IF EXISTS vstb.user_sessions CASCADE;
+DROP TABLE IF EXISTS admin.user_sessions CASCADE;
 
-CREATE TABLE vstb.user_sessions (
+CREATE TABLE admin.user_sessions (
     node_name VARCHAR(128) ENCODING RLE
     ,user_name VARCHAR(128) ENCODING RLE
     ,session_id VARCHAR(128) ENCODING AUTO
@@ -274,9 +274,9 @@ ORDER BY session_id
     ,node_name 
 SEGMENTED BY HASH (session_id) ALL NODES;
 
-DROP TABLE IF EXISTS vstb.transactions CASCADE;
+DROP TABLE IF EXISTS admin.transactions CASCADE;
 
-CREATE TABLE vstb.transactions (
+CREATE TABLE admin.transactions (
      start_timestamp    timestamptz ENCODING    DELTARANGE_COMP 
     ,end_timestamp  timestamptz ENCODING    DELTARANGE_COMP 
     ,node_name  VARCHAR(128)    ENCODING    RLE 
@@ -314,9 +314,9 @@ ORDER BY transaction_id
     ,is_ddl 
 SEGMENTED BY HASH (transaction_id) ALL NODES;
 
-DROP TABLE IF EXISTS vstb.load_streams CASCADE;
+DROP TABLE IF EXISTS admin.load_streams CASCADE;
 
-CREATE TABLE vstb.load_streams (
+CREATE TABLE admin.load_streams (
     session_id VARCHAR(128) ENCODING RLE
     ,transaction_id INT ENCODING COMMONDELTA_COMP
     ,statement_id INT ENCODING RLE
@@ -357,9 +357,9 @@ ORDER BY transaction_id
 SEGMENTED BY HASH (transaction_id) ALL NODES;
 
 
-DROP TABLE IF EXISTS vstb.projection_storage CASCADE;
+DROP TABLE IF EXISTS admin.projection_storage CASCADE;
 
-CREATE TABLE vstb.projection_storage (
+CREATE TABLE admin.projection_storage (
     node_name VARCHAR(128) ENCODING RLE
     ,projection_id INT ENCODING AUTO
     ,projection_name VARCHAR(128) ENCODING AUTO
@@ -392,9 +392,9 @@ SEGMENTED BY HASH (
         ,last_refresh_ts
 ) ALL NODES;
 
-DROP TABLE IF EXISTS vstb.projection_usage CASCADE;
+DROP TABLE IF EXISTS admin.projection_usage CASCADE;
 
-CREATE TABLE vstb.projection_usage (
+CREATE TABLE admin.projection_usage (
     query_start_timestamp timestamptz ENCODING DELTARANGE_COMP
     ,node_name VARCHAR(128) ENCODING RLE
     ,user_name VARCHAR(128) ENCODING RLE
@@ -424,9 +424,9 @@ ORDER BY anchor_table_schema
     ,anchor_table_id 
 SEGMENTED BY HASH (anchor_table_name) ALL NODES;
 
-DROP TABLE IF EXISTS vstb.dc_execution_engine_events CASCADE;
+DROP TABLE IF EXISTS admin.dc_execution_engine_events CASCADE;
 
-CREATE TABLE vstb.dc_execution_engine_events (
+CREATE TABLE admin.dc_execution_engine_events (
     "time" timestamptz ENCODING DELTARANGE_COMP
     ,node_name VARCHAR(128) ENCODING RLE
     ,session_id VARCHAR(128) ENCODING AUTO
@@ -461,9 +461,9 @@ ORDER BY transaction_id
 SEGMENTED BY HASH (transaction_id) ALL NODES;
 
 
-DROP TABLE IF EXISTS vstb.system_resource_usage CASCADE;
+DROP TABLE IF EXISTS admin.system_resource_usage CASCADE;
 
-CREATE TABLE vstb.system_resource_usage
+CREATE TABLE admin.system_resource_usage
 (
     node_name varchar(128) ENCODING RLE, 
     end_time timestamp ENCODING COMMONDELTA_COMP,
@@ -480,9 +480,9 @@ SEGMENTED BY HASH(node_name, end_time) ALL NODES
 
 
 
-DROP TABLE IF EXISTS vstb.resource_acquisitions CASCADE;
+DROP TABLE IF EXISTS admin.resource_acquisitions CASCADE;
 
-CREATE TABLE vstb.resource_acquisitions
+CREATE TABLE admin.resource_acquisitions
 (
     node_name varchar(128) ENCODING RLE,
     transaction_id int ENCODING COMMONDELTA_COMP,
@@ -522,34 +522,34 @@ SELECT SET_CONFIG_PARAMETER('GlobalEEProfiling', 1);
 --=============================================================================
 -- Initial Setup
 --=============================================================================
-;drop table vstb.dc_execution_engine_events
-;drop table vstb.execution_engine_profiles
-;drop table vstb.load_streams
-;drop table vstb.projection_storage
-;drop table vstb.projection_usage
-;drop table vstb.query_events
-;drop table vstb.query_plan_profiles
-;drop table vstb.query_profiles
-;drop table vstb.query_requests
-;drop table vstb.resource_rejection_details
-;drop table vstb.transactions
-;drop table vstb.user_sessions 
+;drop table admin.dc_execution_engine_events
+;drop table admin.execution_engine_profiles
+;drop table admin.load_streams
+;drop table admin.projection_storage
+;drop table admin.projection_usage
+;drop table admin.query_events
+;drop table admin.query_plan_profiles
+;drop table admin.query_profiles
+;drop table admin.query_requests
+;drop table admin.resource_rejection_details
+;drop table admin.transactions
+;drop table admin.user_sessions 
 ;
  
  
  
-select * into vstb.dc_execution_engine_events from dc_execution_engine_events           WHERE 1=0;
-select * into vstb.dc_projections_used        from dc_projections_used                  WHERE 1=0;
-select * into vstb.load_streams               from v_monitor.load_streams               WHERE 1=0;
-select * into vstb.execution_engine_profiles  from v_monitor.execution_engine_profiles  WHERE 1=0;
-select * into vstb.query_profiles             from v_monitor.query_profiles             WHERE 1=0;
-select * into vstb.query_plan_profiles        from v_monitor.query_plan_profiles        WHERE 1=0;
-select * into vstb.query_requests             from v_monitor.query_requests             WHERE 1=0;
-select * into vstb.query_events               from v_monitor.query_events               WHERE 1=0;
-select * into vstb.resource_rejection_details from v_monitor.resource_rejection_details WHERE 1=0;
-select * into vstb.sessions                   from v_monitor.sessions                   WHERE 1=0;
-select * into vstb.user_sessions              from v_monitor.user_sessions              WHERE 1=0;
-select * into vstb.transactions               from v_monitor.transactions               WHERE 1=0;
-select *, GETDATE()::DATE AS last_refresh_ts into vstb.projection_storage from v_monitor.projection_storage  ;
+select * into admin.dc_execution_engine_events from dc_execution_engine_events           WHERE 1=0;
+select * into admin.dc_projections_used        from dc_projections_used                  WHERE 1=0;
+select * into admin.load_streams               from v_monitor.load_streams               WHERE 1=0;
+select * into admin.execution_engine_profiles  from v_monitor.execution_engine_profiles  WHERE 1=0;
+select * into admin.query_profiles             from v_monitor.query_profiles             WHERE 1=0;
+select * into admin.query_plan_profiles        from v_monitor.query_plan_profiles        WHERE 1=0;
+select * into admin.query_requests             from v_monitor.query_requests             WHERE 1=0;
+select * into admin.query_events               from v_monitor.query_events               WHERE 1=0;
+select * into admin.resource_rejection_details from v_monitor.resource_rejection_details WHERE 1=0;
+select * into admin.sessions                   from v_monitor.sessions                   WHERE 1=0;
+select * into admin.user_sessions              from v_monitor.user_sessions              WHERE 1=0;
+select * into admin.transactions               from v_monitor.transactions               WHERE 1=0;
+select *, GETDATE()::DATE AS last_refresh_ts into admin.projection_storage from v_monitor.projection_storage  ;
 
 --******************************************************************************/

@@ -1,19 +1,19 @@
 --==============================================================================
 -- Diagnostic Views - Including Historical data
 --
--- **vstb.vProjectionSizeHistory**
--- **vstb.vProjectionUsageHistory** 
--- **vstb.vLongRunningQueriesHistory**
--- **vstb.vProjectionGrowthOverTimeWeekly**
+-- **admin.vProjectionSizeHistory**
+-- **admin.vProjectionUsageHistory** 
+-- **admin.vLongRunningQueriesHistory**
+-- **admin.vProjectionGrowthOverTimeWeekly**
 --==============================================================================
  
 
 --=========================================================================
 --Create vProjectionSizeHistory
 --=========================================================================
-DROP VIEW IF EXISTS vstb.vProjectionSizeHistory ;
+DROP VIEW IF EXISTS admin.vProjectionSizeHistory ;
 
-CREATE VIEW vstb.vProjectionSizeHistory AS
+CREATE VIEW admin.vProjectionSizeHistory AS
 SELECT
     anchor_table_schema || '.' || anchor_table_name AS anchor_table_schema_name
    ,projection_schema || '.' || projection_name AS projection_schema_name
@@ -23,16 +23,16 @@ SELECT
    ,SUM(ros_count)               AS ros_count_sum
    ,MIN(ros_count)               AS ros_count_min
    ,MIN(ros_count)               AS ros_count_max
-FROM  vstb.projection_storage
+FROM  admin.projection_storage
 GROUP BY 1,2,3
 ORDER BY 1,2,3;
 
 --=========================================================================
 --Create vProjectionUsageHistory
 --=========================================================================
-DROP VIEW IF EXISTS vstb.vProjectionUsageHistory ;
+DROP VIEW IF EXISTS admin.vProjectionUsageHistory ;
 
-CREATE VIEW vstb.vProjectionUsageHistory 
+CREATE VIEW admin.vProjectionUsageHistory 
 AS
 SELECT 
      PS.table_schema
@@ -150,7 +150,7 @@ LEFT JOIN
             ,DATEDIFF('DAY'
                      ,CASE WHEN io_type LIKE 'output'  THEN query_start_timestamp::DATE ELSE NULL END
                      ,GETDATE()) AS DaysSinceLastModify
-         FROM vstb.projection_usage ) AS B1
+         FROM admin.projection_usage ) AS B1
     GROUP BY table_id) AS T
 ON  PS.table_id  = T.table_id 
 LEFT JOIN 
@@ -197,7 +197,7 @@ LEFT JOIN
             ,DATEDIFF('DAY'
                      ,CASE WHEN io_type LIKE 'output'  THEN query_start_timestamp::DATE ELSE NULL END
                      ,GETDATE()) AS DaysSinceLastModify
-         FROM vstb.projection_usage ) AS B1
+         FROM admin.projection_usage ) AS B1
     GROUP BY projection_id) AS PU
    ON  P.projection_id = PU.projection_id
 LEFT JOIN 
@@ -240,9 +240,9 @@ ORDER BY
 --=========================================================================
 --Create vLongRunningQueriesHistory
 --=========================================================================
-DROP VIEW IF EXISTS vstb.vLongRunningQueriesHistory;
+DROP VIEW IF EXISTS admin.vLongRunningQueriesHistory;
 
-CREATE VIEW vstb.vLongRunningQueriesHistory
+CREATE VIEW admin.vLongRunningQueriesHistory
 AS 
 SELECT
      node_name
@@ -288,7 +288,7 @@ SELECT
     ,error_count
     ,request_id
     ,GETDATE() AS Today  
-FROM vstb.query_requests   
+FROM admin.query_requests   
 ORDER BY request_duration_ms DESC 
 ;
 
@@ -299,9 +299,9 @@ ORDER BY request_duration_ms DESC
 --This table measures compressed storage over multiple projections
 --Space usage reported is not RAW data.
 --=========================================================================
-DROP VIEW IF EXISTS vstb.vProjectionGrowthOverTimeWeekly;
+DROP VIEW IF EXISTS admin.vProjectionGrowthOverTimeWeekly;
 
-CREATE VIEW vstb.vProjectionGrowthOverTimeWeekly
+CREATE VIEW admin.vProjectionGrowthOverTimeWeekly
 AS
 SELECT 
        node_name
@@ -338,7 +338,7 @@ SELECT slice_time::DATE+6 as slice_time_week
       ,anchor_table_schema
       ,TS_LAST_VALUE(used_bytes, 'CONST') AS used_bytes
       ,TS_LAST_VALUE(row_count,  'CONST') AS row_count
-FROM vstb.projection_storage
+FROM admin.projection_storage
 WHERE 1 = 1
   AND projection_schema NOT LIKE 'v_%' 
 TIMESERIES slice_time AS '1 WEEK' 

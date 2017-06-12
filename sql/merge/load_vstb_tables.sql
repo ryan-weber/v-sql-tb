@@ -2,7 +2,7 @@
 -- Merge data into the historical tables.
 --   T=Target
 --   S=Source
--- vstb.dc_projections_used
+-- admin.dc_projections_used
 -- 20131126 - DH - Creation
 --============================================================================
 
@@ -19,7 +19,7 @@
 \qecho  projection_usage
 \qecho =========================================================================
 INSERT /*+direct, label(load_historical$v0_1$projection_usage)  */
-INTO vstb.projection_usage
+INTO admin.projection_usage
 (
     query_start_timestamp
    ,node_name
@@ -66,7 +66,7 @@ SELECT
    ,anchor_table_id
    ,anchor_table_schema
    ,anchor_table_name
-FROM vstb.projection_usage   
+FROM admin.projection_usage   
 WHERE query_start_timestamp >= (SELECT MIN(query_start_timestamp) 
                                   FROM v_monitor.projection_usage)
 ;
@@ -77,7 +77,7 @@ WHERE query_start_timestamp >= (SELECT MIN(query_start_timestamp)
 \qecho  execution_engine_profiles
 \qecho =========================================================================
 INSERT /*+direct, label(load_historical$v0_1$execution_engine_profiles)  */
-INTO vstb.execution_engine_profiles
+INTO admin.execution_engine_profiles
 (
     node_name
    ,user_id
@@ -117,7 +117,7 @@ SELECT
    ,counter_tag
    ,counter_value
    ,is_executing
-FROM execution_engine_profiles
+FROM v_monitor.execution_engine_profiles
 WHERE is_executing = 0
   AND transaction_id <> 0 
 EXCEPT
@@ -140,7 +140,7 @@ SELECT
    ,counter_tag
    ,counter_value
    ,is_executing
-FROM vstb.execution_engine_profiles
+FROM admin.execution_engine_profiles
 WHERE        (node_name, user_id, session_id, transaction_id, statement_id)
    IN (SELECT DISTINCT
               node_name, user_id, session_id, transaction_id, statement_id
@@ -149,11 +149,11 @@ WHERE        (node_name, user_id, session_id, transaction_id, statement_id)
 
 
 \qecho =========================================================================
-\qecho  vstb.load_streams
+\qecho  admin.load_streams
 \qecho  Only pick up statistics for completed load jobs
 \qecho =========================================================================
 INSERT /*+direct, label(load_historical$v0_1$load_streams)  */
-INTO vstb.load_streams
+INTO admin.load_streams
 (
     session_id
    ,transaction_id
@@ -215,7 +215,7 @@ SELECT
    ,unsorted_row_count
    ,sorted_row_count
    ,sort_complete_percent
-FROM vstb.load_streams  
+FROM admin.load_streams  
 WHERE       ( session_id, transaction_id, statement_id )
    IN (SELECT DISTINCT
               session_id, transaction_id, statement_id
@@ -223,10 +223,10 @@ WHERE       ( session_id, transaction_id, statement_id )
 ;
 
 \qecho =========================================================================
-\qecho  vstb.query_events
+\qecho  admin.query_events
 \qecho =========================================================================
 INSERT /*+direct, label(load_historical$v0_1$query_events)  */
-INTO vstb.query_events
+INTO admin.query_events
 (
     event_timestamp
    ,node_name
@@ -282,7 +282,7 @@ SELECT
    ,object_id
    ,event_details
    ,suggested_action
-FROM vstb.query_events
+FROM admin.query_events
 WHERE
   (
            event_timestamp
@@ -302,12 +302,12 @@ WHERE
 
 
 \qecho =========================================================================
-\qecho  vstb.query_plan_profiles
+\qecho  admin.query_plan_profiles
 \qecho  Only select records from completed queries.
 \qecho  Only select records where queries run time >= :query_duration_seconds 
 \qecho =========================================================================
 INSERT /*+direct, label(load_historical$v0_1$query_plan_profiles)  */
-INTO vstb.query_plan_profiles
+INTO admin.query_plan_profiles
 (
     transaction_id
    ,statement_id
@@ -342,7 +342,7 @@ LEFT JOIN
           (SELECT DISTINCT
             transaction_id
              ,statement_id
-          FROM vstb.query_plan_profiles) AS T
+          FROM admin.query_plan_profiles) AS T
   ON S.transaction_id = T.transaction_id
  AND S.statement_id   = T.statement_id
 JOIN v_monitor.query_profiles AS QP
@@ -359,10 +359,10 @@ WHERE T.transaction_id IS NULL
 
 
 \qecho =========================================================================
-\qecho  vstb.query_profiles
+\qecho  admin.query_profiles
 \qecho =========================================================================
 INSERT /*+direct, label(load_historical$v0_1$query_profiles)  */
-INTO vstb.query_profiles
+INTO admin.query_profiles
 (
     session_id
    ,transaction_id
@@ -394,7 +394,7 @@ SELECT
    ,query_search_path
    ,schema_name
    ,table_name
-   ,projections_used
+   ,'N/A' as projections_used
    ,query_duration_us
    ,query_start_epoch
    ,query_start
@@ -404,7 +404,7 @@ SELECT
    ,processed_row_count
    ,reserved_extra_memory
    ,is_executing
-FROM query_profiles
+FROM v_monitor.query_profiles
 WHERE transaction_id <> 0
   AND is_executing=0
   AND query_type in ('LOAD','QUERY','UTILITY')
@@ -429,17 +429,17 @@ SELECT
    ,processed_row_count
    ,reserved_extra_memory
    ,is_executing
-FROM vstb.query_profiles
+FROM admin.query_profiles
 WHERE query_start >= (SELECT MIN(query_start) FROM query_profiles)
 ;
 
    
 
 \qecho =========================================================================
-\qecho  vstb.query_requests
+\qecho  admin.query_requests
 \qecho =========================================================================
 INSERT /*+direct, label(load_historical$v0_1$query_requests)  */
-INTO vstb.query_requests
+INTO admin.query_requests
 (
     node_name
    ,user_name
@@ -500,16 +500,16 @@ SELECT
    ,end_timestamp
    ,request_duration_ms
    ,is_executing
-FROM vstb.query_requests
+FROM admin.query_requests
 WHERE start_timestamp >= (SELECT MIN(start_timestamp)
                             FROM v_monitor.query_requests)
 ;
 
 \qecho =========================================================================
-\qecho  vstb.resource_rejection_details
+\qecho  admin.resource_rejection_details
 \qecho =========================================================================
 INSERT /*+direct, label(load_historical$v0_1$resource_rejection_details)  */
-INTO vstb.resource_rejection_details
+INTO admin.resource_rejection_details
 (
     rejected_timestamp
    ,node_name
@@ -553,17 +553,17 @@ SELECT
    ,reason
    ,resource_type
    ,rejected_value
-FROM  vstb.resource_rejection_details
+FROM  admin.resource_rejection_details
 WHERE rejected_timestamp >= (SELECT MIN(rejected_timestamp)
                                FROM v_monitor.resource_rejection_details)
 ;
 
  
 \qecho =========================================================================
-\qecho  vstb.user_sessions
+\qecho  admin.user_sessions
 \qecho =========================================================================
 INSERT /*+direct, label(load_historical$v0_1$user_sessions)  */
-INTO vstb.user_sessions
+INTO admin.user_sessions
 (
     node_name
    ,user_name
@@ -610,7 +610,7 @@ SELECT
    ,client_label
    ,ssl_state
    ,authentication_method
-FROM vstb.user_sessions
+FROM admin.user_sessions
 WHERE session_start_timestamp >= (SELECT MIN(session_start_timestamp)
                                     FROM v_monitor.user_sessions)
 ;
@@ -618,11 +618,11 @@ WHERE session_start_timestamp >= (SELECT MIN(session_start_timestamp)
 
 
 \qecho =========================================================================
-\qecho  vstb.transactions
+\qecho  admin.transactions
 \qecho  end_timestamp=NULL for transactions that are in process.
 \qecho =========================================================================
 INSERT /*+direct, label(load_historical$v0_1$transactions)  */
-INTO vstb.transactions
+INTO admin.transactions
 (
     start_timestamp
    ,end_timestamp
@@ -689,16 +689,16 @@ SELECT
    ,is_local
    ,is_initiator
    ,is_ddl
-FROM vstb.transactions 
+FROM admin.transactions 
 WHERE start_timestamp >= (SELECT MIN(start_timestamp) FROM v_monitor.transactions)
 ;
  
  
 \qecho =========================================================================
-\qecho  vstb.projection_storage
+\qecho  admin.projection_storage
 \qecho =========================================================================
 INSERT /*+direct, label(load_historical$v0_1$projection_storage)  */
-INTO vstb.projection_storage 
+INTO admin.projection_storage 
 (
     node_name
    ,projection_id
@@ -740,11 +740,11 @@ FROM v_monitor.projection_storage
 \qecho =========================================================================
 \qecho  Delete records from earlier in the day to save space.
 \qecho =========================================================================
-DELETE FROM vstb.projection_storage 
+DELETE FROM admin.projection_storage 
 WHERE last_refresh_ts::DATE = (SELECT MAX(last_refresh_ts)::DATE 
-                                 FROM vstb.projection_storage)
+                                 FROM admin.projection_storage)
   AND last_refresh_ts       < (SELECT MAX(last_refresh_ts) 
-                                 FROM vstb.projection_storage); 
+                                 FROM admin.projection_storage); 
 
 
 
@@ -752,7 +752,7 @@ WHERE last_refresh_ts::DATE = (SELECT MAX(last_refresh_ts)::DATE
 \qecho  dc_execution_engine_events
 \qecho =========================================================================
 INSERT /*+direct, label(load_historical$v0_1$dc_execution_engine_events)  */
-INTO vstb.dc_execution_engine_events
+INTO admin.dc_execution_engine_events
 (
     time
    ,node_name
@@ -786,7 +786,7 @@ SELECT
    ,event_oid
    ,event_details
    ,suggested_action
-FROM dc_execution_engine_events  
+FROM v_internal.dc_execution_engine_events  
 WHERE  transaction_id <> 0 
 EXCEPT
 SELECT
@@ -805,7 +805,7 @@ SELECT
    ,event_oid
    ,event_details
    ,suggested_action
-FROM vstb.dc_execution_engine_events  
+FROM admin.dc_execution_engine_events  
 WHERE time >= (SELECT MIN(time) FROM dc_execution_engine_events)
 ;
 
@@ -814,7 +814,7 @@ WHERE time >= (SELECT MIN(time) FROM dc_execution_engine_events)
 \qecho  system_resource_usage
 \qecho =========================================================================
 INSERT /*+direct, label(load_historical$v0_1$system_resource_usage)  */
-INTO vstb.system_resource_usage
+INTO admin.system_resource_usage
 (
      node_name
     ,end_time
@@ -835,14 +835,14 @@ SELECT
     ,io_read_kbytes_per_second
     ,io_written_kbytes_per_second
 FROM v_monitor.system_resource_usage 
-WHERE end_time > (SELECT MAX(end_time) from vstb.system_resource_usage)
+WHERE end_time > (SELECT MAX(end_time) from admin.system_resource_usage)
 ;
 
 \qecho =========================================================================
 \qecho  resource_acquisitions
 \qecho =========================================================================
 INSERT /*+direct, label(load_historical$v0_1$resource_acquisitions)  */
-INTO vstb.resource_acquisitions
+INTO admin.resource_acquisitions
 (
     node_name
    ,transaction_id
@@ -877,7 +877,7 @@ SELECT
 FROM  v_monitor.resource_acquisitions
 WHERE is_executing=0
   AND           (transaction_id, statement_id, queue_entry_timestamp) 
-  NOT IN (SELECT transaction_id, statement_id, queue_entry_timestamp FROM vstb.resource_acquisitions)
+  NOT IN (SELECT transaction_id, statement_id, queue_entry_timestamp FROM admin.resource_acquisitions)
 ;
   
 
@@ -885,19 +885,19 @@ WHERE is_executing=0
 \qecho =========================================================================
 \qecho  Collect Statistics
 \qecho =========================================================================
-SELECT ANALYZE_STATISTICS('vstb.dc_execution_engine_events' );
-SELECT ANALYZE_STATISTICS('vstb.projection_usage'           );
-SELECT ANALYZE_STATISTICS('vstb.execution_engine_profiles'  );
-SELECT ANALYZE_STATISTICS('vstb.load_streams'               );
-SELECT ANALYZE_STATISTICS('vstb.projection_storage'         );
-SELECT ANALYZE_STATISTICS('vstb.query_events'               );
-SELECT ANALYZE_STATISTICS('vstb.query_plan_profiles'        );
-SELECT ANALYZE_STATISTICS('vstb.query_profiles'             );
-SELECT ANALYZE_STATISTICS('vstb.query_requests'             );
-SELECT ANALYZE_STATISTICS('vstb.resource_rejection_details' );
-SELECT ANALYZE_STATISTICS('vstb.user_sessions'              );
-SELECT ANALYZE_STATISTICS('vstb.transactions'               );
-SELECT ANALYZE_STATISTICS('vstb.system_resource_usage'      );
-SELECT ANALYZE_STATISTICS('vstb.resource_acquisitions'      );
+SELECT ANALYZE_STATISTICS('admin.dc_execution_engine_events' );
+SELECT ANALYZE_STATISTICS('admin.projection_usage'           );
+SELECT ANALYZE_STATISTICS('admin.execution_engine_profiles'  );
+SELECT ANALYZE_STATISTICS('admin.load_streams'               );
+SELECT ANALYZE_STATISTICS('admin.projection_storage'         );
+SELECT ANALYZE_STATISTICS('admin.query_events'               );
+SELECT ANALYZE_STATISTICS('admin.query_plan_profiles'        );
+SELECT ANALYZE_STATISTICS('admin.query_profiles'             );
+SELECT ANALYZE_STATISTICS('admin.query_requests'             );
+SELECT ANALYZE_STATISTICS('admin.resource_rejection_details' );
+SELECT ANALYZE_STATISTICS('admin.user_sessions'              );
+SELECT ANALYZE_STATISTICS('admin.transactions'               );
+SELECT ANALYZE_STATISTICS('admin.system_resource_usage'      );
+SELECT ANALYZE_STATISTICS('admin.resource_acquisitions'      );
 
  

@@ -13,9 +13,9 @@
 --=========================================================================
 --Create vProjectionUsage 
 --=========================================================================
-DROP VIEW IF EXISTS vstb.vProjectionUsage ;
+DROP VIEW IF EXISTS admin.vProjectionUsage ;
 
-CREATE VIEW vstb.vProjectionUsage 
+CREATE VIEW admin.vProjectionUsage 
 AS
 SELECT /*+ label(vProjectionUsage) */
      PS.table_schema
@@ -184,9 +184,9 @@ ORDER BY
 --Create vProjectionColumnSize
 ------ Courtesy of Eli Reiman
 --=========================================================================
-DROP VIEW IF EXISTS vstb.vProjectionColumnSize ;
+DROP VIEW IF EXISTS admin.vProjectionColumnSize ;
 
-CREATE VIEW vstb.vProjectionColumnSize  
+CREATE VIEW admin.vProjectionColumnSize  
 AS
  SELECT 
     tab.anchor_table_schema
@@ -260,9 +260,9 @@ ORDER BY tab.GB_Table DESC
 --=========================================================================
 --Create vRunningQueries
 --=========================================================================
-DROP VIEW IF EXISTS vstb.vRunningQueries;
+DROP VIEW IF EXISTS admin.vRunningQueries;
 
-CREATE VIEW vstb.vRunningQueries
+CREATE VIEW admin.vRunningQueries
 AS 
 SELECT
      node_name
@@ -290,9 +290,9 @@ ORDER BY statement_start DESC
 --=========================================================================
 --Create vLongRunningQueries
 --=========================================================================
-DROP VIEW IF EXISTS vstb.vLongRunningQueries;
+DROP VIEW IF EXISTS admin.vLongRunningQueries;
 
-CREATE VIEW vstb.vLongRunningQueries
+CREATE VIEW admin.vLongRunningQueries
 AS 
 SELECT
      node_name
@@ -324,9 +324,9 @@ ORDER BY request_duration_ms DESC
 --=========================================================================
 --Create vQueryPlanProfiles
 --=========================================================================
-DROP VIEW IF EXISTS vstb.vQueryPlanProfiles;
+DROP VIEW IF EXISTS admin.vQueryPlanProfiles;
 
-CREATE VIEW vstb.vQueryPlanProfiles
+CREATE VIEW admin.vQueryPlanProfiles
 AS 
 SELECT qp.query_start
     ,qp.query_duration_us
@@ -400,9 +400,9 @@ ORDER BY qp.query_start DESC
 --=========================================================================
 --Create vMostCommonQueries
 --=========================================================================
-DROP VIEW IF EXISTS vstb.vMostCommonQueries;
+DROP VIEW IF EXISTS admin.vMostCommonQueries;
 
-CREATE VIEW vstb.vMostCommonQueries
+CREATE VIEW admin.vMostCommonQueries
 AS 
 SELECT
      REGEXP_REPLACE(request,'[\r\n\t]',' ')  AS request   
