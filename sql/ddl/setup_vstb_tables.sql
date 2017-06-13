@@ -503,6 +503,36 @@ CREATE TABLE admin.resource_acquisitions
 SEGMENTED BY HASH(transaction_id, statement_id, queue_entry_timestamp) ALL NODES ;
 
 
+DROP TABLE IF EXISTS admin.grants CASCADE;
+
+CREATE TABLE admin.grants
+(
+    grant_id                    int             ENCODING AUTO,
+    grantor_id                  int             ENCODING RLE,
+    grantor                     varchar(128)    ENCODING RLE,
+    privileges_description      varchar(8192)   ENCODING RLE,
+    object_schema               varchar(128)    ENCODING RLE,
+    object_name                 varchar(128)    ENCODING AUTO,
+    object_id                   int             ENCODING AUTO,
+    object_type                 varchar(8192)   ENCODING RLE,
+    grantee_id                  int             ENCODING AUTO,
+    grantee                     varchar(128)    ENCODING AUTO,
+    added_dttm                  timestamp       ENCODING AUTO,
+    active                      boolean         ENCODING RLE,
+    removed_at                  timestamp       ENCODING AUTO            
+)
+ORDER BY
+    active,
+    object_type,
+    privileges_description,
+    grantor,
+    grantor_id,
+    object_schema,
+    grant_id
+SEGMENTED BY
+    HASH(grant_id) ALL NODES;
+
+
 
 --SELECT MARK_DESIGN_KSAFE(0);
 

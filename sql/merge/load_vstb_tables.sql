@@ -879,7 +879,58 @@ WHERE is_executing=0
   AND           (transaction_id, statement_id, queue_entry_timestamp) 
   NOT IN (SELECT transaction_id, statement_id, queue_entry_timestamp FROM admin.resource_acquisitions)
 ;
-  
+
+
+
+\qecho =========================================================================
+\qecho  grants
+\qecho =========================================================================
+INSERT /*+ label(load_historical$v0_1$grants)  */
+INTO admin.grants 
+(
+  grant_id,
+  grantor_id,
+  grantor,
+  privileges_description,
+  object_schema,
+  object_name,
+  object_id,
+  object_type,
+  grantee_id,
+  grantee,
+  added_dttm,
+  active,
+  removed_at
+)
+SELECT
+  grant_id,
+  grantor_id,
+  grantor,
+  privileges_description,
+  object_schema,
+  object_name,
+  object_id,
+  object_type,
+  grantee_id,
+  grantee,
+  current_timestamp,
+  TRUE,
+  NULL
+FROM
+  v_catalog.grants
+WHERE
+  grant_id not in (select grant_id from admin.grants)
+;
+
+
+UPDATE admin.grants
+SET 
+  active = false,
+  removed_at = current_timestamp
+WHERE
+  active = true
+  and grant_id not in (select grant_id from v_catalog.grants)
+;
 
 
 \qecho =========================================================================
@@ -899,5 +950,6 @@ SELECT ANALYZE_STATISTICS('admin.user_sessions'              );
 SELECT ANALYZE_STATISTICS('admin.transactions'               );
 SELECT ANALYZE_STATISTICS('admin.system_resource_usage'      );
 SELECT ANALYZE_STATISTICS('admin.resource_acquisitions'      );
+SELECT ANALYZE_STATISTICS('admin.grants'                     );
 
  
